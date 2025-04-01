@@ -11,8 +11,7 @@ import matplotlib.pyplot as plt
 
 listening = False
 voice_detected = False
-ThreeSecondArray = []
-
+stop_listening_timer = 0
 
 probability_list = [0]
 time_stamp = 0
@@ -20,15 +19,17 @@ sensitivity = 0.5
 latency = 0.1
 
 max_samples = 512
-
+probability_data = pd.DataFrame({"x":time_stamp, "y":probability_list})
 
 device = torch.device('cuda')
 model, utils = torch.hub.load(source= "local", repo_or_dir = 'snakers4\\silero-vad', model= 'silero_vad')
 model.to(device)
 
+#resamples Gradio audio to 16000hz
 def resample(y, original_sample_rate, target_sample_rate: int = 16_000):
     return signal.resample(y, int(len(y) * target_sample_rate / original_sample_rate))
 
+#sets audio chunk to np array
 def preprocess_audio(y):
     if y is None:
         return np.zeros(512, dtype=np.float32)
@@ -39,18 +40,13 @@ def preprocess_audio(y):
     y = y.squeeze()
     return y
 
-
-
-
-df = pd.DataFrame({"x":time_stamp, "y":probability_list})
-
 def audio_callback(new_chunk):
     global voice_detected
     global listening
-    global df
+    global probability_data
     global time_stamp
     global sensitivity
-    global ThreeSecondArray
+    global stop_listening_timer
     if new_chunk is None:
         voice_detected = True
         return True
@@ -68,7 +64,6 @@ def audio_callback(new_chunk):
     else:
         audio_tensor = audio_tensor[:max_samples]
 
-    vad_iterator = VADIterator(model)
 
     with torch.no_grad():
 
@@ -78,10 +73,10 @@ def audio_callback(new_chunk):
         else:
             speech_detected = False
 
-        df = df._append({"x":time_stamp, "y":probability}, ignore_index = True)
+        probability_data = probability_data._append({"x":time_stamp, "y":probability}, ignore_index = True)
 
-        if len(df) > 20:
-            df = df.iloc[-20:]
+        if len(probability_data) > 20:
+            probability_data = probability_data.iloc[-20:]
         time_stamp += 1
     
     if speech_detected:
@@ -94,19 +89,18 @@ def audio_callback(new_chunk):
         return False
     
 def update_plot():
-    global df
+    global probability_data
     global latency
-    def retrieve_df():
-        return df
-        
-    gr.update(x_lim=[df["x"].iloc[0], df["x"].iloc[-1]])
-    print(latency)
+    def retrieve_probability_data():
+        return probability_data
+            
+    gr.update(x_lim=[probability_data["x"].iloc[0], probability_data["x"].iloc[-1]])
 
-    return retrieve_df()
+    return retrieve_probability_data()
         
 def read_voice_state():
     global voice_detected
-    global ThreeSecondArray
+    global stop_listening_timer
     global listening
     global sensitivity
     global latency
@@ -114,11 +108,11 @@ def read_voice_state():
     while True:
         time.sleep(latency)
         if not voice_detected:
-            ThreeSecondArray.append(1)
+            stop_listening_timer += 1
         else:
-            ThreeSecondArray = []
+            stop_listening_timer = 0
 
-        if len(ThreeSecondArray) >= 30:
+        if stop_listening_timer >= 30:
             listening = False
             TimerStarted = False
     
@@ -133,7 +127,10 @@ def change_sensitivity(value):
 def change_latency(value):
     global latency
     latency = value
-    gr.update(every = latency)
+    gr.update(every = latency, label = str(probability_data["x"]))
+
+def test():
+    print(10)
     
 
 
@@ -148,12 +145,11 @@ with gr.Blocks() as ui:
         listening = gr.Textbox(label = "listening", value = listening)
 
 
-    plot = gr.LinePlot(update_plot, x = "x", y = "y", every= latency, y_lim= [0, 1])
+    plot = gr.LinePlot(update_plot, label = "Probability",  x = "x", y = "y", every= latency, y_lim= [0, 1])
     sensitivity_slider = gr.Slider(minimum= 0, maximum= 1, value = sensitivity, label= "Sensitivity")
     sensitivity_slider.change(change_sensitivity, inputs= sensitivity_slider,)
     latency_slider = gr.Slider(minimum = 0, maximum= 1, value = latency, label = "Latency" )
     latency_slider.change(change_latency, inputs= [latency_slider], outputs= plot)
-
 
     t = gr.Timer(0.1, active= True)
     t.tick(fn = read_listening_state, outputs = [listening])
@@ -164,6 +160,7 @@ with gr.Blocks() as ui:
         outputs=[voice_detection],
         stream_every= latency
     )
+    
     
 
 ui.launch(inbrowser=True)

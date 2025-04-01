@@ -1,6 +1,6 @@
 # Voice Activity Detection (VAD) using Silero VAD
 
-This repository contains a Voice Activity Detection (VAD) system built using the Silero VAD model, PyTorch, and Gradio for a real-time interactive interface. The system detects voice activity from a microphone input and plots the probability of speech presence over time.
+This repository contains a Voice Activity Detection (VAD) system built using the Silero VAD model, and Gradio for a real-time interactive interface. The system detects voice activity from a microphone input and plots the probability of speech presence over time with adjustable sensitivity.
 
 ## Features
 - **Real-time voice activity detection** using Silero VAD.

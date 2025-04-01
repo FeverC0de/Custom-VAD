@@ -5,9 +5,11 @@ This repository contains a Voice Activity Detection (VAD) system built using the
 ## Features
 - **Real-time voice activity detection** using Silero VAD.
 - **Adjustable sensitivity and latency** settings.
-- **Interactive Gradio UI** for easy monitoring and parameter tuning.
-- **Plots probability data** of detected speech.
-- **CUDA support** for optimized inference speed.
+- **Interactive Gradio UI** for easy monitoring.
+- **Plots probability data** of detected speech provided the model.
+
+## Bugs
+- **Latency slider doesn't work at the moment will work on fixing it.
 
 ## Installation
 

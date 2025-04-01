@@ -13,6 +13,7 @@ This repository contains a Voice Activity Detection (VAD) system built using the
 - If you wish to fix the latency, change the ```latency``` variable in **vad.py**
 
 ## To Do
+- Make it into a class for better software design. Using global variables like here tend to get messy
 - Work on changing the latency through gradio UI
 
 
@@ -20,7 +21,7 @@ This repository contains a Voice Activity Detection (VAD) system built using the
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/vad-project.git
+   git clone https://github.com/FeverC0de/vad-project.git
    cd vad-project
    ```
 2. Install dependencies:

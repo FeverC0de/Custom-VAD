@@ -9,7 +9,12 @@ This repository contains a Voice Activity Detection (VAD) system built using the
 - **Plots probability data** of detected speech provided the model.
 
 ## Bugs
-- **Latency slider doesn't work at the moment will work on fixing it.
+- **Latency slider** doesn't work at the moment will work on fixing it.
+- If you wish to fix the latency, change the ```latency``` variable in **vad.py**
+
+## To Do
+- Work on changing the latency through gradio UI
+
 
 ## Installation
 

@@ -1,1 +1,1 @@
-A fully fledged interface to communicate with text and audio to customizable AI bot with speech capabilities.
+VAD implementation with visualization using silerovad and gradio.
